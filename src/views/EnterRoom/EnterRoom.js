@@ -4,13 +4,13 @@ import { useState } from 'react';
 import './EnterRoom.css';
 import { Form, Button } from 'react-bootstrap';
  
-export default function EnterRoom({ setName, room, setRoom, setKey }) {
+export default function EnterRoom({ setName, roomName, setRoom, setKey }) {
     const [ errors, setErrors ] = useState([]);
 
     // We only want to save the options to the main state if submitForm accepts the whole form
     // So we need a local version of state for editing
     const [ _name, _setName ] = useState();
-    const [ _room, _setRoom ] = useState(room);
+    const [ _room, _setRoom ] = useState(roomName);
     const [ _key, _setKey ] = useState();
 
     function submitForm() {  
