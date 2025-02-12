@@ -2,79 +2,19 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
+import { getKey, encryption, decryption } from "../../services/util.translate.js"
 import './ChatRoom.css';
+import SideBar from '../../components/SideBar/SideBar.js';
+import Message from '../../components/Message/Message.js';
+
 import { Button } from 'react-bootstrap';
 
-import { getKey, encryption, decryption } from "../../services/util.translate.js"
- 
-function ActionMessage({ name, message }) {
-    return (
-        <div>
-            { message.user } { message.user !== name ? 'joined' : 'left' }
-        </div>
-    )
-}
-function Message({ name, message }) {
-    const fromActiveUser = name === decryption(message.author);
-    const color = uniqueColour(decryption(message.author));
-
-    let _message, _author;
-    if (!message.isEncrypted) {
-        _message = decryption(message.text);
-        _author = decryption(message.author);
-    } else {
-        _message = message.text;
-        _author = message.author;
-    }
-
-    function uniqueColour(name, s = 30, l = 40) {
-        let hash = 0
-        for (var i = 0; i < name.length; i++)
-            hash = name.charCodeAt(i) + ((hash << 5) - hash)
-        return "hsl(" + (hash % 360) + ", " + s + "%, " + l + "%)"
-    }
-
-    function zeroPadding(num, digit = 2) {
-        var zero = ""
-        for (var i = 0; i < digit; i++) zero += "0"
-            return (zero + num).slice(-digit)
-    }
-
-    function readableDateTime(time) {
-        const _date = new Date(time)
-        let _hours = _date.getHours()
-        let zone = "am"
-
-        if (_hours > 12) {
-            _hours -= 12
-            zone = "pm"
-        }
-
-        return `${_hours}:${zeroPadding(_date.getMinutes())}${zone}`
-    }
-
-    return (
-        <div id="message-container" className={ fromActiveUser ? 'sent' : 'received' }>
-            <div id="message">
-                { _message }
-            </div>
-    
-            <div id="author" style={{ color }}>
-                { _author }
-            </div>
-    
-            <div id="dateTime">
-                { readableDateTime(message.date) }
-            </div>
-        </div>
-    );
-}
-
-export default function ChatRoom({ name, roomName, roomKey }) {
+export default function ChatRoom({ name, roomName, roomKey, setKey }) {
     const [ messages, setMessages ] = useState([]);
     const [ newMessage, setNewMessage ] = useState();
+    const [ unlockKey, setUnlockKey ] = useState([]);
     const [ isTyping, setIsTyping ] = useState();
-    const [ room, setRoom ] = useState({});
+    const [ room, setRoom ] = useState({ });
     const [ usersTyping, setUsersTyping ] = useState([]);
     const [ activeUsers, setActiveUsers ] = useState([]);
     let timer
@@ -86,7 +26,6 @@ export default function ChatRoom({ name, roomName, roomKey }) {
         onOpen: () => sendMessage("5209ac21-2004-4f17-bdf4-b2e66d4ce50f"),
         shouldReconnect: () => true
     });
-
 
     useEffect(() => {
         async function handleMessage(_json) {
@@ -150,15 +89,9 @@ export default function ChatRoom({ name, roomName, roomKey }) {
             }
         }
 
-        if (!!lastMessage?.data) {
-            const _json = JSON.parse(lastMessage?.data)
-            console.log('data', _json);
-          
-            handleMessage(_json);
-        }
+        if (!!lastMessage?.data)
+            handleMessage(JSON.parse(lastMessage?.data));
     }, [lastMessage, activeUsers, name, usersTyping]);
-
-
 
     function scrollToBottom() {
         let messengersContainer = document.getElementById("chat-messages-container");
@@ -178,9 +111,7 @@ export default function ChatRoom({ name, roomName, roomKey }) {
         )
     }
     function setRoomEncryptStatus(status) {
-        messages.forEach((_message) => {
-          _message.isEncrypted = status;
-        });
+        setMessages(messages.map(_message => ({ ..._message, isEncrypted: status })));
     }
     function handleInput(e) {
         setNewMessage(e.target.value);
@@ -197,17 +128,19 @@ export default function ChatRoom({ name, roomName, roomKey }) {
           setIsTyping(false)
         }, 2000)
     }
+    function testUnlockKey() {
+        if (unlockKey === roomKey) {
+            setRoomEncryptStatus(false);
+            setUnlockKey(null);
+        }
+    }
 
-      
-    
     function attemptNotification() {
         // Only send notifications if player is not on screen
         // showNewMessage();
     }
 
     function pushMessage(message) {
-        console.log('pushing message', message);
-        
         messages.push(message);
         setMessages(messages);
     }
@@ -299,19 +232,29 @@ export default function ChatRoom({ name, roomName, roomKey }) {
         setIsTyping(false)
     }
 
+    const containsEncrypted = !!messages.find(_message => _message.isEncrypted);
+
     return (
         <div id="chat-room">
-            <div id="chat-messages-container">
+            <div id="chat-messages-container" className={ containsEncrypted ? 'shortened-message-container' : '' }>
                 { 
                     readyState !== ReadyState.OPEN 
                         ? <h3 style={ {'marginTop': '30px' }}>Connecting to WebSocket</h3>
-                        : messages.map(
-                            _message => _message.event === 'joined'
-                                ? <ActionMessage name={name} message={_message} key={_message.id || _message.timestamp} />
-                                : <Message name={name} message={_message} key={_message.id || _message.timestamp} />
-                        )
+                        : messages.map(_message => <Message name={name} message={_message} key={_message.id || _message.timestamp} /> )
                 }
             </div>
+
+            { 
+                containsEncrypted && <div id="unlock-key">
+                        <div>
+                            <input value={unlockKey} onChange={e => setUnlockKey(e.target.value)} placeholder="Unlock Key" type="password" />
+
+                            <Button variant="secondary" onClick={testUnlockKey}>
+                                Submit
+                            </Button>
+                        </div>
+                    </div>
+            }
 
             <div id="form-container">
                <textarea value={newMessage} onChange={handleInput} placeholder="New Message" rows="3"></textarea>
@@ -322,6 +265,8 @@ export default function ChatRoom({ name, roomName, roomKey }) {
             </div>
 
             { usersTyping.map(_user => <span key={`${_user}_typing`}> {decryption(_user)} is typing... </span>)}
+
+            { room?.room && <SideBar room={room} setRoomEncryptStatus={setRoomEncryptStatus} setMessages={setMessages} setKey={setKey} /> }
         </div>
     )
 }

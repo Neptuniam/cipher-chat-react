@@ -1,0 +1,42 @@
+#message-container {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid gray;
+    border-radius: 5px;
+  
+    margin: 10px;
+    padding: 5px;
+  
+    text-align: left;
+  
+    position: relative;
+}
+
+#message-container.received {
+    margin: 10px auto 10px 0px;
+    border-color: #7ec699 !important;
+}
+#message-container.sent {
+    margin: 10px 0px 10px auto;
+    border-color: rgb(84 105 212 / 0.5) !important;
+}
+
+img {
+    width: 100%;
+    height: auto;
+}
+#message {
+    font-size: 22px;
+    font-weight: 500;
+}
+
+#author {
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+#date-time {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}

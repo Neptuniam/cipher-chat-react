@@ -65,5 +65,5 @@ export default function EnterRoom({ setName, roomName, setRoom, setKey }) {
                 { errors.map((_error, _index) => <div class="error-message">{_index+1}. {_error}</div>) }
             </div> }
         </>
-    )
+    );
 }

@@ -40,3 +40,22 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+/* Global styles */
+.ellipsis {
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clickable {
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: rgb(187,134,252) !important;
+}
+.btn-secondary {
+  background-color: rgb(3,218,197) !important;
+}
