@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/cipher-chat-react/static/css/main.124e3991.css",
+    "main.js": "/cipher-chat-react/static/js/main.1fe5c525.js",
+    "static/js/453.630f821a.chunk.js": "/cipher-chat-react/static/js/453.630f821a.chunk.js",
+    "index.html": "/cipher-chat-react/index.html",
+    "main.124e3991.css.map": "/cipher-chat-react/static/css/main.124e3991.css.map",
+    "main.1fe5c525.js.map": "/cipher-chat-react/static/js/main.1fe5c525.js.map",
+    "453.630f821a.chunk.js.map": "/cipher-chat-react/static/js/453.630f821a.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.124e3991.css",
+    "static/js/main.1fe5c525.js"
+  ]
+}
